@@ -194,12 +194,16 @@ def import_csv(file_path: str):
         
         # Read with naive pandas read_csv
         # Use dtype=str for IDs to preserve leading zeros
-        df = pd.read_csv(file_path, dtype={'SBD': str, 'Ma_Don_Vi': str})
+        # Format expected: sbd, đơn vị, trường, môn, điểm, giải
+        df = pd.read_csv(file_path, dtype={'sbd': str})
         
         # Helper to safely get float
         def get_float(val):
             try:
-                return float(val) if pd.notna(val) and str(val).strip() != '' else None
+                if pd.isna(val) or str(val).strip() == '':
+                    return None
+                val_str = str(val).replace(',', '.') # Handle comma decimal separator if present
+                return float(val_str)
             except:
                 return None
 
@@ -210,29 +214,27 @@ def import_csv(file_path: str):
             return str(val).strip()
 
         candidates = []
+        # Normalize column names to handle potential casing issues
+        df.columns = [c.strip().lower() for c in df.columns]
+
         for _, row in df.iterrows():
-            # Logic to handle potentially missing 'Lop' column shift? 
-            # Actually, standard pandas read_csv usually handles multiple commas correctly 
-            # (assigning NaN to empty fields between commas).
-            
-            # Assuming standard structure:
-            # Ma_Don_Vi, Ten_Don_Vi, SBD, Mon_Thi, Diem_Viet, Diem_Nghe, Diem_Doc, Diem_Noi, Tong_Diem, Giai, Lop, Truong
-            
             cand = Candidate(
-                sbd=get_str(row.get('SBD')),
+                sbd=get_str(row.get('sbd')),
                 name=None,
-                province=get_str(row.get('Ten_Don_Vi')),
-                school=get_str(row.get('Truong')),  # Truong is last column
-                subject=get_str(row.get('Mon_Thi')),
-                class_grade=get_str(row.get('Lop')), # Lop is second to last
+                # Support both requested format (đơn vị) and file format (don_vi)
+                province=get_str(row.get('đơn vị') or row.get('don_vi')),
+                school=get_str(row.get('trường') or row.get('truong')),
+                subject=get_str(row.get('môn') or row.get('mon')),
+                class_grade=None,
                 
-                score_writing=get_float(row.get('Diem_Viet')),
-                score_listening=get_float(row.get('Diem_Nghe')),
-                score_reading=get_float(row.get('Diem_Doc')),
-                score_speaking=get_float(row.get('Diem_Noi')),
+                # Detailed scores are not present in the new format
+                score_writing=None,
+                score_listening=None,
+                score_reading=None,
+                score_speaking=None,
                 
-                total_score=get_float(row.get('Tong_Diem')),
-                prize=get_str(row.get('Giai'))
+                total_score=get_float(row.get('điểm') or row.get('diem')),
+                prize=get_str(row.get('giải') or row.get('giai'))
             )
             candidates.append(cand)
             
