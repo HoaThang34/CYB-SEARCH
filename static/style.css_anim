@@ -1,0 +1,43 @@
+
+/* Page Entry Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-view {
+    animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Nav Item Hover Animation */
+.nav-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--primary-light);
+    transform: scaleY(0);
+    transition: transform 0.2s;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-item:hover::after {
+    transform: scaleY(1);
+}
+
+.nav-item.active::after {
+    content: none;
+}

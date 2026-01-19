@@ -1,0 +1,78 @@
+
+// Custom Cursor Logic
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if device has fine pointer (mouse)
+    if (window.matchMedia("(pointer: fine)").matches) {
+        initCustomCursor();
+    }
+});
+
+function initCustomCursor() {
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    const outline = document.createElement('div');
+    outline.className = 'cursor-outline';
+    
+    document.body.appendChild(dot);
+    document.body.appendChild(outline);
+
+    let cursorX = 0, cursorY = 0;
+    let outlineX = 0, outlineY = 0;
+
+    // Track mouse movement
+    window.addEventListener('mousemove', (e) => {
+        cursorX = e.clientX;
+        cursorY = e.clientY;
+        
+        // Dot moves instantly
+        dot.style.left = `${cursorX}px`;
+        dot.style.top = `${cursorY}px`;
+        
+        // Ensure visibility
+        dot.style.opacity = 1;
+        outline.style.opacity = 0.5;
+    });
+
+    // Smooth trailing animation for outline
+    function animateOutline() {
+        // Interpolation factor (0.15 = speed)
+        outlineX += (cursorX - outlineX) * 0.15;
+        outlineY += (cursorY - outlineY) * 0.15;
+        
+        outline.style.left = `${outlineX}px`;
+        outline.style.top = `${outlineY}px`;
+        
+        requestAnimationFrame(animateOutline);
+    }
+    animateOutline();
+
+    // Hover interactions
+    const hoverSelectors = 'a, button, input, select, textarea, .clickable-school, .nav-item, .feature-card, .btn';
+    
+    // Delegation for Hover state
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.closest(hoverSelectors)) {
+            document.body.classList.add('hovering');
+        }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+        if (e.target.closest(hoverSelectors)) {
+            document.body.classList.remove('hovering');
+        }
+    });
+    
+    // Hide cursor when leaving window
+    document.addEventListener('mouseout', (e) => {
+        if (!e.relatedTarget && !e.toElement) {
+            dot.style.opacity = 0;
+            outline.style.opacity = 0;
+        }
+    });
+
+    // Show cursor when entering window
+    document.addEventListener('mouseenter', (e) => {
+        dot.style.opacity = 1;
+        outline.style.opacity = 0.5;
+    });
+}
